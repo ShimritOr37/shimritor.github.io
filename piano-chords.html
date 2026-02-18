@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Piano Chords</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131c;
+    --surface2: #1c1c2a;
+    --gold: #c9a84c;
+    --gold-light: #f0cc6e;
+    --cream: #f5f0e8;
+    --muted: #4a4a6a;
+    --accent: #7b5ea7;
+    --highlight: #e8c85a;
+    --white-key: #f8f5ee;
+    --black-key: #1a1a22;
+    --active-white: #c9a84c;
+    --active-black: #b8963e;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image: 
+      radial-gradient(ellipse at 20% 0%, rgba(123,94,167,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 100%, rgba(201,168,76,0.1) 0%, transparent 60%);
+  }
+
+  header {
+    text-align: center;
+    padding: 48px 24px 32px;
+    position: relative;
+  }
+
+  header::after {
+    content: '';
+    display: block;
+    width: 120px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 24px auto 0;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--gold-light) 0%, var(--cream) 50%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  /* Root selector */
+  .controls {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px 32px;
+  }
+
+  .section-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .root-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+
+  .root-btn {
+    background: var(--surface);
+    border: 1px solid var(--surface2);
+    color: var(--cream);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-width: 48px;
+    text-align: center;
+  }
+
+  .root-btn:hover {
+    border-color: var(--gold);
+    color: var(--gold-light);
+  }
+
+  .root-btn.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--bg);
+    font-weight: 500;
+  }
+
+  .chord-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 36px;
+  }
+
+  .chord-btn {
+    background: var(--surface);
+    border: 1px solid var(--surface2);
+    color: var(--cream);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .chord-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent, rgba(201,168,76,0.05));
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .chord-btn:hover::before { opacity: 1; }
+  .chord-btn:hover { border-color: var(--muted); }
+
+  .chord-btn.active {
+    border-color: var(--gold);
+    background: linear-gradient(135deg, var(--surface2), rgba(201,168,76,0.1));
+  }
+
+  .chord-btn .chord-symbol {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--cream);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .chord-btn .chord-desc {
+    font-size: 0.65rem;
+    color: var(--muted);
+  }
+
+  /* Display area */
+  .display {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px 48px;
+  }
+
+  .chord-info {
+    background: var(--surface);
+    border: 1px solid var(--surface2);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: flex-start;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .chord-name-big {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    color: var(--gold-light);
+    line-height: 1;
+    min-width: 160px;
+  }
+
+  .chord-details {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .chord-type {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .chord-formula {
+    font-size: 0.9rem;
+    color: var(--cream);
+    margin-bottom: 6px;
+  }
+
+  .chord-notes {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+
+  .note-pill {
+    background: var(--surface2);
+    border: 1px solid var(--muted);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 0.8rem;
+    color: var(--cream);
+    transition: all 0.3s ease;
+  }
+
+  .note-pill.highlighted {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--bg);
+    font-weight: 500;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(201,168,76,0.4);
+  }
+
+  /* Piano */
+  .piano-container {
+    background: var(--surface);
+    border: 1px solid var(--surface2);
+    border-radius: 16px;
+    padding: 32px;
+    overflow-x: auto;
+  }
+
+  .piano-wrap {
+    position: relative;
+    height: 160px;
+    width: fit-content;
+    margin: 0 auto;
+    min-width: 480px;
+  }
+
+  .white-keys {
+    display: flex;
+    height: 100%;
+    gap: 2px;
+  }
+
+  .white-key {
+    width: 44px;
+    height: 160px;
+    background: var(--white-key);
+    border-radius: 0 0 6px 6px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  }
+
+  .white-key:hover { background: #ede8de; }
+  
+  .white-key.active {
+    background: var(--active-white);
+    transform: scaleY(0.98);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3), inset 0 -4px 8px rgba(0,0,0,0.15);
+  }
+
+  .white-key .key-label {
+    font-size: 0.6rem;
+    color: #999;
+    letter-spacing: 0.05em;
+    font-family: 'DM Mono', monospace;
+    user-select: none;
+  }
+
+  .white-key.active .key-label { color: var(--bg); font-weight: 600; }
+
+  .black-keys {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    pointer-events: none;
+  }
+
+  .black-key {
+    position: absolute;
+    width: 28px;
+    height: 100px;
+    background: var(--black-key);
+    border-radius: 0 0 5px 5px;
+    border: 1px solid #111;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    pointer-events: all;
+    box-shadow: 2px 4px 8px rgba(0,0,0,0.6);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 6px;
+    z-index: 2;
+  }
+
+  .black-key:hover { background: #2d2d3a; }
+
+  .black-key.active {
+    background: var(--active-black);
+    box-shadow: 1px 2px 4px rgba(0,0,0,0.6), inset 0 -2px 6px rgba(0,0,0,0.3);
+  }
+
+  .black-key .key-label {
+    font-size: 0.5rem;
+    color: #555;
+    font-family: 'DM Mono', monospace;
+    user-select: none;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .black-key.active .key-label { color: var(--bg); }
+
+  /* Fingering dots */
+  .key-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--bg);
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+
+  .white-key.active .key-dot,
+  .black-key.active .key-dot {
+    opacity: 1;
+    background: rgba(0,0,0,0.35);
+  }
+
+  /* Pulse animation on change */
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(201,168,76,0.6); }
+    70% { box-shadow: 0 0 0 12px rgba(201,168,76,0); }
+    100% { box-shadow: 0 0 0 0 rgba(201,168,76,0); }
+  }
+
+  .white-key.active { animation: pulse 0.5s ease forwards; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Piano Chords</h1>
+  <p class="subtitle">Visual chord reference</p>
+</header>
+
+<div class="controls">
+  <p class="section-label">Root Note</p>
+  <div class="root-grid" id="rootGrid"></div>
+
+  <p class="section-label">Chord Type</p>
+  <div class="chord-grid" id="chordGrid"></div>
+</div>
+
+<div class="display">
+  <div class="chord-info">
+    <div class="chord-name-big" id="chordNameBig">C Major</div>
+    <div class="chord-details">
+      <div class="chord-type" id="chordType">Major Triad</div>
+      <div class="chord-formula" id="chordFormula">Formula: 1 – 3 – 5</div>
+      <div class="chord-notes" id="chordNotes"></div>
+    </div>
+  </div>
+
+  <div class="piano-container">
+    <div class="piano-wrap" id="pianoWrap">
+      <div class="white-keys" id="whiteKeys"></div>
+      <div class="black-keys" id="blackKeys"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────────────────────
+
+const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const ENHARMONIC = {'C#':'Db','D#':'Eb','F#':'Gb','G#':'Ab','A#':'Bb'};
+
+const ROOTS = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const ROOT_LABELS = {
+  'C':'C','C#':'C# / Db','D':'D','D#':'D# / Eb','E':'E',
+  'F':'F','F#':'F# / Gb','G':'G','G#':'G# / Ab','A':'A','A#':'A# / Bb','B':'B'
+};
+
+const CHORD_TYPES = [
+  { id:'maj',   label:'Major',         symbol:'',    desc:'Major triad',            formula:'1 – 3 – 5',       intervals:[0,4,7] },
+  { id:'min',   label:'Minor',         symbol:'m',   desc:'Minor triad',            formula:'1 – b3 – 5',      intervals:[0,3,7] },
+  { id:'dim',   label:'Diminished',    symbol:'°',   desc:'Diminished triad',       formula:'1 – b3 – b5',     intervals:[0,3,6] },
+  { id:'aug',   label:'Augmented',     symbol:'+',   desc:'Augmented triad',        formula:'1 – 3 – #5',      intervals:[0,4,8] },
+  { id:'sus2',  label:'Sus2',          symbol:'sus2',desc:'Suspended 2nd',          formula:'1 – 2 – 5',       intervals:[0,2,7] },
+  { id:'sus4',  label:'Sus4',          symbol:'sus4',desc:'Suspended 4th',          formula:'1 – 4 – 5',       intervals:[0,5,7] },
+  { id:'maj7',  label:'Major 7th',     symbol:'maj7',desc:'Major 7th',              formula:'1 – 3 – 5 – 7',   intervals:[0,4,7,11] },
+  { id:'7',     label:'Dominant 7th',  symbol:'7',   desc:'Dominant 7th',           formula:'1 – 3 – 5 – b7',  intervals:[0,4,7,10] },
+  { id:'min7',  label:'Minor 7th',     symbol:'m7',  desc:'Minor 7th',              formula:'1 – b3 – 5 – b7', intervals:[0,3,7,10] },
+  { id:'dim7',  label:'Dim 7th',       symbol:'°7',  desc:'Diminished 7th',         formula:'1 – b3 – b5 – bb7',intervals:[0,3,6,9] },
+  { id:'hdim7', label:'Half-Dim',      symbol:'ø7',  desc:'Half-diminished 7th',    formula:'1 – b3 – b5 – b7',intervals:[0,3,6,10] },
+  { id:'min6',  label:'Minor 6th',     symbol:'m6',  desc:'Minor 6th',              formula:'1 – b3 – 5 – 6',  intervals:[0,3,7,9] },
+  { id:'maj6',  label:'Major 6th',     symbol:'6',   desc:'Major 6th',              formula:'1 – 3 – 5 – 6',   intervals:[0,4,7,9] },
+  { id:'9',     label:'9th',           symbol:'9',   desc:'Dominant 9th',           formula:'1 – 3 – 5 – b7 – 9',intervals:[0,4,7,10,14] },
+  { id:'maj9',  label:'Major 9th',     symbol:'maj9',desc:'Major 9th',              formula:'1 – 3 – 5 – 7 – 9',intervals:[0,4,7,11,14] },
+  { id:'min9',  label:'Minor 9th',     symbol:'m9',  desc:'Minor 9th',              formula:'1 – b3 – 5 – b7 – 9',intervals:[0,3,7,10,14] },
+  { id:'add9',  label:'Add 9',         symbol:'add9',desc:'Added 9th',              formula:'1 – 3 – 5 – 9',   intervals:[0,4,7,14] },
+  { id:'5',     label:'Power',         symbol:'5',   desc:'Power chord',            formula:'1 – 5',           intervals:[0,7] },
+];
+
+// Piano layout for 2 octaves (C3–B4 = 24 notes, plus the final C)
+// We'll show 2 full octaves: C to B, repeated, + final C
+const WHITE_NOTES_PER_OCT = ['C','D','E','F','G','A','B'];
+const BLACK_MAP = { 'C':'C#','D':'D#','F':'F#','G':'G#','A':'A#' }; // white key -> black key to its right
+
+// Build 2-octave key layout
+function buildKeys() {
+  const whites = [];
+  const blacks = [];
+  let wIdx = 0;
+  const KEY_W = 46; // white key width + gap
+  
+  for (let oct = 3; oct <= 4; oct++) {
+    for (const wn of WHITE_NOTES_PER_OCT) {
+      const noteName = wn + oct;
+      const noteClass = wn;
+      whites.push({ note: noteClass, octave: oct, label: (wn === 'C') ? wn + oct : wn, wIndex: wIdx });
+      if (BLACK_MAP[wn]) {
+        const bn = BLACK_MAP[wn];
+        // Black key sits between wIdx and wIdx+1
+        const left = wIdx * KEY_W + KEY_W * 0.65;
+        blacks.push({ note: bn, octave: oct, label: bn.replace('#','#\n'), wIndex: wIdx, left });
+      }
+      wIdx++;
+    }
+  }
+  // Final C5
+  whites.push({ note: 'C', octave: 5, label: 'C5', wIndex: wIdx });
+  return { whites, blacks };
+}
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let selectedRoot = 'C';
+let selectedChord = CHORD_TYPES[0];
+
+// ── DOM ───────────────────────────────────────────────────────────────────────
+const rootGrid = document.getElementById('rootGrid');
+const chordGrid = document.getElementById('chordGrid');
+const chordNameBig = document.getElementById('chordNameBig');
+const chordType = document.getElementById('chordType');
+const chordFormula = document.getElementById('chordFormula');
+const chordNotes = document.getElementById('chordNotes');
+const whiteKeysEl = document.getElementById('whiteKeys');
+const blackKeysEl = document.getElementById('blackKeys');
+
+// Build root buttons
+ROOTS.forEach(r => {
+  const btn = document.createElement('button');
+  btn.className = 'root-btn' + (r === selectedRoot ? ' active' : '');
+  btn.textContent = ROOT_LABELS[r];
+  btn.onclick = () => { selectedRoot = r; updateAll(); renderRootBtns(); };
+  btn.dataset.root = r;
+  rootGrid.appendChild(btn);
+});
+
+function renderRootBtns() {
+  rootGrid.querySelectorAll('.root-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.root === selectedRoot);
+  });
+}
+
+// Build chord type buttons
+CHORD_TYPES.forEach(ct => {
+  const btn = document.createElement('button');
+  btn.className = 'chord-btn' + (ct.id === selectedChord.id ? ' active' : '');
+  btn.innerHTML = `<span class="chord-symbol">${selectedRoot}${ct.symbol || (ct.id==='maj'?'':'')}</span><span class="chord-desc">${ct.desc}</span>`;
+  btn.dataset.id = ct.id;
+  btn.onclick = () => { selectedChord = ct; updateAll(); renderChordBtns(); };
+  chordGrid.appendChild(btn);
+});
+
+function renderChordBtns() {
+  chordGrid.querySelectorAll('.chord-btn').forEach(btn => {
+    const ct = CHORD_TYPES.find(c => c.id === btn.dataset.id);
+    btn.classList.toggle('active', ct.id === selectedChord.id);
+    const sym = ct.id === 'maj' ? '' : ct.symbol;
+    btn.querySelector('.chord-symbol').textContent = selectedRoot + sym;
+  });
+}
+
+// Build piano (once)
+const { whites, blacks } = buildKeys();
+const KEY_W = 46;
+
+whites.forEach((wk) => {
+  const el = document.createElement('div');
+  el.className = 'white-key';
+  el.dataset.note = wk.note;
+  el.dataset.octave = wk.octave;
+  el.innerHTML = `<div class="key-dot"></div><span class="key-label">${wk.label}</span>`;
+  whiteKeysEl.appendChild(el);
+});
+
+// Set piano wrap width
+const pianoWrap = document.getElementById('pianoWrap');
+pianoWrap.style.width = (whites.length * KEY_W) + 'px';
+
+blacks.forEach((bk) => {
+  const el = document.createElement('div');
+  el.className = 'black-key';
+  el.dataset.note = bk.note;
+  el.dataset.octave = bk.octave;
+  el.style.left = bk.left + 'px';
+  el.innerHTML = `<div class="key-dot"></div><span class="key-label">${bk.label}</span>`;
+  blackKeysEl.appendChild(el);
+});
+
+// ── Logic ─────────────────────────────────────────────────────────────────────
+
+function getChordNotes(root, intervals) {
+  const rootIdx = NOTES.indexOf(root);
+  return intervals.map(i => NOTES[(rootIdx + i) % 12]);
+}
+
+function noteDisplay(n) {
+  if (n.includes('#') && ENHARMONIC[n]) return n + ' / ' + ENHARMONIC[n];
+  return n;
+}
+
+function updateAll() {
+  const chordNotesArr = getChordNotes(selectedRoot, selectedChord.intervals);
+  const sym = selectedChord.id === 'maj' ? '' : selectedChord.symbol;
+  const name = selectedRoot + sym;
+
+  // Info panel
+  chordNameBig.textContent = name;
+  chordType.textContent = selectedChord.desc;
+  chordFormula.textContent = 'Formula: ' + selectedChord.formula;
+
+  // Note pills
+  chordNotes.innerHTML = '';
+  chordNotesArr.forEach((n, i) => {
+    const pill = document.createElement('span');
+    pill.className = 'note-pill';
+    pill.textContent = noteDisplay(n);
+    setTimeout(() => pill.classList.add('highlighted'), i * 60);
+    chordNotes.appendChild(pill);
+  });
+
+  // Piano highlighting
+  // We want to show the chord starting from the lowest C3 or relevant octave
+  // Find best octave for root: start from octave 3
+  const rootIdx = NOTES.indexOf(selectedRoot);
+  const startOctave = 3;
+
+  // Build set of (note, octave) pairs to highlight
+  const toHighlight = new Set();
+  let prevMidiBase = -1;
+  
+  selectedChord.intervals.forEach(interval => {
+    const noteIdx = (rootIdx + interval) % 12;
+    const noteOctAdjust = Math.floor((rootIdx + interval) / 12);
+    const oct = startOctave + noteOctAdjust;
+    const noteName = NOTES[noteIdx];
+    toHighlight.add(noteName + oct);
+    // Also highlight one octave up if needed for 9th chords
+    if (oct > 4) toHighlight.add(noteName + oct); // keep as is
+  });
+
+  // Clear all
+  document.querySelectorAll('.white-key, .black-key').forEach(k => k.classList.remove('active'));
+
+  // Activate matching keys
+  document.querySelectorAll('.white-key, .black-key').forEach(k => {
+    const key = k.dataset.note + k.dataset.octave;
+    if (toHighlight.has(key)) {
+      k.classList.add('active');
+    }
+  });
+}
+
+updateAll();
+</script>
+</body>
+</html>
